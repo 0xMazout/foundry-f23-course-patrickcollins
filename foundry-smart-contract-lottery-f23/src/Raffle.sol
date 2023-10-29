@@ -15,12 +15,7 @@ contract Raffle is VRFConsumerBaseV2 {
     error Raffle__WinnerPickTooEarly();
     error Raffle__TransferFailed();
     error Raffle_RaffleNotOpen();
-    error Raffle__UpkeepNotNeeded(
-        uint256 currentBalance,
-        uint256 numPlayers,
-        uint256 raffleState
-
-    );
+    error Raffle__UpkeepNotNeeded(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
 
     //** Type Declarations*/
     enum RaffleState {
@@ -87,9 +82,9 @@ contract Raffle is VRFConsumerBaseV2 {
         emit EnteredRaffle(msg.sender);
     }
 
-    function performUpkeep(bytes calldata ) external {
-        (bool upkeepNeeded ,) = checkUpKeep("");
-        if (!upkeepNeeded){
+    function performUpkeep(bytes calldata) external {
+        (bool upkeepNeeded,) = checkUpKeep("");
+        if (!upkeepNeeded) {
             revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
         }
 
@@ -124,7 +119,13 @@ contract Raffle is VRFConsumerBaseV2 {
         return (upKeepNeeded, "0x0");
     }
 
-    function fulfillRandomWords(/**requestId*/uint256 , uint256[] memory randomWords) internal override {
+    function fulfillRandomWords(
+        /**
+         * requestId
+         */
+        uint256,
+        uint256[] memory randomWords
+    ) internal override {
         // s_players = 10
         //rng = 12
         //12 % 10 = 2
@@ -138,13 +139,19 @@ contract Raffle is VRFConsumerBaseV2 {
         }
         emit PickedWinner(winner);
     }
-
-    function exitRaffle() public {}
-
     /**
      * Getter Function
      */
-    function getEntranceFee() public view returns (uint256) {
+
+    function getEntranceFee() external view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getRaffleState() external view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function getPLayer(uint256 indexOfPlayyer) external view returns (address) {
+        return s_players[indexOfPlayyer];
     }
 }
